@@ -17,6 +17,7 @@
 #################################################################################
 
 
+from pickle import TRUE
 import rospy
 import numpy as np
 import pandas as pd
@@ -30,12 +31,13 @@ dirpath = os.path.dirname(__file__)
 
 # 离线策略Q-learning
 class QLearningTable(object):
-    def __init__(self, actions=[0,1,2,3],learning_rate=0.01, reward_decay=0.9, e_greedy=0.8): #e_greedy=0.9
+    def __init__(self, actions=[0,1,2,3],learning_rate=0.01, reward_decay=0.9, e_greedy=0.5): #e_greedy=0.9
         self.actions =  actions
         self.lr = learning_rate
         self.gamma = reward_decay
         self.epsilon = e_greedy
         self.q_table = pd.DataFrame(columns=self.actions, dtype=np.float64)
+        self.actions_list = []
         self.load =False
         self.load_ep = 0
         self.model_dir = dirpath+"/model_notfsm/a"+str(self.load_ep)+".csv"
@@ -64,7 +66,11 @@ class QLearningTable(object):
             action = state_action.idxmax()
         else:
             # # 选择随机行为
-            action = np.random.choice(self.actions)
+            state_action = self.q_table.loc[observation, :]
+            self.actions_list=state_action[state_action.values>-1].index
+            #action = np.random.choice(self.actions)
+            action = np.random.choice(self.actions_list)
+
         return action
     def save_model(self):
         self.q_table.to_csv(self.model_dir)
@@ -75,7 +81,7 @@ class QLearningTable(object):
     def learn(self, s, a, r, s_):
         self.check_state_exist(s_)
         q_predict = self.q_table.loc[s, a]
-        if s_ != [5.5, 4.5]:
+        if s_ != [6.5, 3.5]:
             # 使用公式：Q_target = r+γ  maxQ(s',a')
             q_target = r + self.gamma * self.q_table.loc[s_, :].max()  # next state is not terminal
         else:
@@ -116,26 +122,29 @@ if __name__ == '__main__':
             action = agent.getAction(str(state))
             state_item = tuple(state)
             tmp_policy.append({state_item:action})
-            rospy.loginfo("step=={},action=={}".format(step_num,action))
+            rospy.loginfo("step=={},action=={}".format(step_num, action))
+            if agent.load:
+                action = pd.Int64Dtype(action) 
             next_state, reward, done = env.step(action, state)
             score += reward
             rospy.loginfo("next_state=={},reward=={},socre=={}".format(next_state,reward,score))
-            if agent.load:
-                action = str(action) 
+
             if agent.epsilon < 0.99:
                 agent.learn(str(state), action, reward, str(next_state))
             state = next_state
             # print(np.max(agent.q_table.values))
             get_action.data = [action, score, reward]
             pub_get_action.publish(get_action)
+            step_num += 1
             if step_num % 5 ==0:
                 result.data = [score, np.max(agent.q_table.values)]
-                pub_result.publish(result)
+                pub_result.publish(result)   
                 agent.save_model()
                 if agent.epsilon < 0.99: 
-                        agent.epsilon += 0.005  
+                        agent.epsilon += 0.0005  
             if done:
-                agent.save_model()
+                agent.save_model() 
+                policy = tmp_policy
                 break     
             if env.get_goalbox: 
                 result.data = [score, np.max(agent.q_table.values)]
@@ -153,7 +162,6 @@ if __name__ == '__main__':
                     count = 0
                     policy = tmp_policy
                 break
-            step_num += 1
         if flag:
             print(step_num)
             print(tmp_policy)

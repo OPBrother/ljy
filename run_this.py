@@ -25,8 +25,8 @@ import sys
 path = os.path.abspath('./lib/envs')
 sys.path.append(path)
 from std_msgs.msg import Float32MultiArray
-# from environment_3 import Env
-from environment_real import Env
+from environment_3 import Env
+#from environment_real import Env
 dirpath = os.path.dirname(__file__)
 import matplotlib.pyplot as plt
 
@@ -41,8 +41,8 @@ class QLearningTable(object):
         self.epsilon = e_greedy
         self.actions_list = []
         self.q_table = pd.DataFrame(columns=self.actions, dtype=np.float64)
-        self.load =True
-        self.load_ep = 1
+        self.load =False
+        self.load_ep = 0
         self.model_dir = dirpath+"/model_fsm/"+str(self.load_ep)+"b.csv"
         if self.load:
             self.load_model()
@@ -62,8 +62,8 @@ class QLearningTable(object):
         temp = json.loads(state)
         # temp = state
         # 得到fsm当前状态
-        # for i in range(35):
-        for i in range(25):
+        for i in range(35):
+        #for i in range(25):
             if self.state_tran[0][i] == temp:
                 # 得到fsm状态可能的动作，添加在actions_list中
                 for trans in self.env_transitions:
@@ -93,7 +93,7 @@ class QLearningTable(object):
         temp = json.loads(s_)
         # 得到fsm当前状态
         # for i in range(35):
-        for i in range(25):
+        for i in range(35):
             if self.state_tran[0][i] == temp:
                 # 得到fsm状态可能的动作，添加在actions_list中
                 for trans in self.env_transitions:
@@ -102,8 +102,9 @@ class QLearningTable(object):
                 self.actions_list.sort()
                 break
         self.check_state_exist_fsm(s_)
+        self.actions_list = []
         q_predict = self.q_table.loc[s, a]
-        if s_ != [5.5, 4.5]:
+        if s_ != [5.5, 3.5]:
             # 使用公式：Q_target = r+γ  maxQ(s',a')
             q_target = r + self.gamma * self.q_table.loc[s_, :].max()  # next state is not terminal
         else:
@@ -169,6 +170,7 @@ if __name__ == '__main__':
 
             get_action.data = [action, score, reward]
             pub_get_action.publish(get_action)
+            step_num += 1
             if step_num % 5 ==0:
                 # result.data = [score, np.max(agent.q_table.values)]
                 # pub_result.publish(result)
@@ -178,6 +180,7 @@ if __name__ == '__main__':
                         agent.epsilon += 0.01
             if done:
                 agent.save_model()
+                policy = tmp_policy
                 break     
             if env.get_goalbox: 
                 result.data = [score, np.max(agent.q_table.values)]
@@ -196,7 +199,7 @@ if __name__ == '__main__':
                     count = 0
                     policy = tmp_policy
                 break
-            step_num += 1
+            # step_num += 1
         if flag:
             print(step_num)
             # print(tmp_policy)

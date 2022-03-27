@@ -44,12 +44,14 @@ class Env():
         self.pause_proxy = rospy.ServiceProxy('gazebo/pause_physics', Empty)
         self.sub_odom = rospy.Subscriber('odom', Odometry, self.getOdometry)
         self.respawn_goal = Respawn()
-        self.filename = "T2.xml"
+        # self.filename = "T2.xml"
+        self.filename = "turtlebot1.xml"
         self.actions, self.ccontrollable,  self.ncontrollable,  self.states,  self.terminal,  self.initial_state,  self.transitions = parse(self.filename)
         self.actual_state = self.initial_state
         self.action = None
-        # x , y = 7,5
-        self.x , self.y = 5,5
+        #  x , y = 7,5
+        # self.x , self.y = 5,5
+        self.x , self.y = 7,5
         self.state_tran = np.ones([self.y,self.x], dtype=type)
         for i in range(self.x):
             for j in range(self.y):

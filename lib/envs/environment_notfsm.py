@@ -99,8 +99,8 @@ class Env():
         return done
 
     def setReward(self,goal_distance):
-        reward = -10*(goal_distance - self.goal_distance)
-        # reward = 0
+        #reward = -10*(goal_distance - self.goal_distance)
+        reward = -1
         if self.done:
             rospy.loginfo("Collision!!")
             reward = -100
@@ -122,7 +122,7 @@ class Env():
     def restriction(self,action, state):
         x = [1.5, 2.5,4.5,5.5]
         y = [1.5,2.5,3.5]
-        if action == 0 :
+        if action == 0:
             if state[1] < 0:
                 state[1] += 1
             elif state[1] ==3.5 and state[0] in x:
@@ -134,7 +134,7 @@ class Env():
                 state[0] += 1
             elif state[0] ==5.5 and state[1] in y:
                 state[0] += 1
-        elif action == 2 :
+        elif action ==2 :
             if state[0] > 7:
                 state[0] -= 1
             elif state[0] ==1.5 and state[1] in y:
@@ -153,10 +153,10 @@ class Env():
         if action == 0 :
             state[0] = pre_state[0]
             state[1] = pre_state[1]-1
-        elif action == 1 :
+        elif action ==1 :
             state[0] = pre_state[0]-1
             state[1] = pre_state[1]
-        elif action == 2 :
+        elif action ==2 :
             state[0] = pre_state[0]+1
             state[1] = pre_state[1]
         elif action == 3 :

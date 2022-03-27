@@ -123,7 +123,7 @@ class Respawn():
 
             # self.goal_position.position.x = goal_x_list[self.index]
             # self.goal_position.position.y = goal_y_list[self.index]
-            self.goal_position.position.x = 4.5
+            self.goal_position.position.x = 6.5
             self.goal_position.position.y = 3.5
         time.sleep(0.5)
         self.respawnModel()
