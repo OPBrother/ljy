@@ -54,12 +54,8 @@ def parseSup(filename):
 def parse(filename):
     
     doc = xml.dom.minidom.parse(filename)
-    # Só irá fazer o parsing caso o tipo do autômato seja um supervisor. Caso contrário, 
-    # não fará o parsing de nada
     doc_verify = doc.getElementsByTagName("Automaton")
-    verify = doc_verify[0]
-        
-    
+    verify = doc_verify[0]      
     doc_actions = verify.getElementsByTagName("Event")
     doc_states = verify.getElementsByTagName("State")
     doc_transitions = verify.getElementsByTagName("Transition")

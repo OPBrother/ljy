@@ -27,7 +27,7 @@ from respawnGoal import Respawn
 
 class Env():
     def __init__(self, ):
-        self.goal_x = 6.3
+        self.goal_x = 5.3
         self.goal_y = 4.3
         self.angular_speed = 1
         self.linear_speed = 1
@@ -125,19 +125,13 @@ class Env():
         state = self.state_tran[0][self.actual_state]
 
         move_cmd = Twist()
-        while abs(round(self.yaw - self.action_yaw[action], 2)) > 0.1:
-            move_cmd.angular.z = self.angular_speed
-            self.pub_cmd_vel.publish(move_cmd)
-        # start_time = time.time()
-        # while time.time()- start_time < 1:
-        self.pub_cmd_vel.publish(Twist())
         last_rotation = self.yaw
         # 计算与下个目标点的欧式距离
         distance = sqrt(pow(state[0] - self.position.x, 2) + pow(state[1] - self.position.y, 2))
         while distance > 0.05:
             path_angle = atan2(state[1] - self.position.y, state[0]- self.position.x)
 
-            if path_angle < -pi/4 or path_angle > pi/4:
+            if path_angle < -pi/4 *3 or path_angle > pi/4 *3:
                 if state[1] < 0 and  self.position.y < state[1]:
                     path_angle = -2*pi + path_angle
                 elif state[1] >= 0 and  self.position.y > state[1]:
@@ -152,9 +146,9 @@ class Env():
             move_cmd.linear.x = min(self.linear_speed * distance, 0.2) #min = 0.1
 
             if move_cmd.angular.z > 0:
-                move_cmd.angular.z = min(move_cmd.angular.z, 1.5)
+                move_cmd.angular.z = min(move_cmd.angular.z, 2.0)
             else:
-                move_cmd.angular.z = max(move_cmd.angular.z, -1.5)
+                move_cmd.angular.z = max(move_cmd.angular.z, -2.0)
 
             last_rotation = self.yaw
             self.pub_cmd_vel.publish(move_cmd)

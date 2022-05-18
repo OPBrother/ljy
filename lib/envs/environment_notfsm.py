@@ -99,8 +99,8 @@ class Env():
         return done
 
     def setReward(self,goal_distance):
-        #reward = -10*(goal_distance - self.goal_distance)
-        reward = -1
+        reward = -10*(goal_distance - self.goal_distance)
+        # reward = -1
         if self.done:
             rospy.loginfo("Collision!!")
             reward = -100
@@ -181,12 +181,12 @@ class Env():
             move_cmd.angular.z = self.angular_speed * path_angle-self.yaw
 
             distance = sqrt(pow((state[0] - self.position.x), 2) + pow((state[1] -  self.position.y), 2))
-            move_cmd.linear.x = min(self.linear_speed * distance, 0.1)
+            move_cmd.linear.x = min(self.linear_speed * distance, 0.2)
 
             if move_cmd.angular.z > 0:
-                move_cmd.angular.z = min(move_cmd.angular.z, 1.5)
+                move_cmd.angular.z = min(move_cmd.angular.z, 2.0)
             else:
-                move_cmd.angular.z = max(move_cmd.angular.z, -1.5)
+                move_cmd.angular.z = max(move_cmd.angular.z, -2.0)
 
             last_rotation = self.yaw
             self.pub_cmd_vel.publish(move_cmd)

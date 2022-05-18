@@ -121,7 +121,7 @@ def show_plot(result):
 
     plt.legend()
     plt.xlabel('Episode')
-    plt.ylabel('Steps per episode')
+    plt.ylabel('Score')
     plt.title('Q-learning ')
 
     plt.show()
@@ -167,16 +167,13 @@ if __name__ == '__main__':
             if agent.epsilon < 0.99:
                 agent.learn(str(state), action, reward, str(next_state))
             state = next_state
-
             get_action.data = [action, score, reward]
             pub_get_action.publish(get_action)
             step_num += 1
+            result1[step_num] = score
             if step_num % 5 ==0:
-                # result.data = [score, np.max(agent.q_table.values)]
-                # pub_result.publish(result)
                 agent.save_model()
                 if agent.epsilon < 0.99: 
-                        # agent.epsilon += 0.005  
                         agent.epsilon += 0.01
             if done:
                 agent.save_model()
@@ -185,7 +182,7 @@ if __name__ == '__main__':
             if env.get_goalbox: 
                 result.data = [score, np.max(agent.q_table.values)]
                 pub_result.publish(result)
-                result1[e] = score 
+                # result1[e] = score 
                 print(tmp_policy)
                 print("*"*50)    
                 agent.save_model()

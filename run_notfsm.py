@@ -17,7 +17,7 @@
 #################################################################################
 
 
-from pickle import TRUE
+# from pickle import TRUE++++++++++++++++++++++++++++++++++++++++++++++
 import rospy
 import numpy as np
 import pandas as pd
@@ -28,10 +28,12 @@ sys.path.append(path)
 from std_msgs.msg import Float32MultiArray
 from environment_notfsm   import Env
 dirpath = os.path.dirname(__file__)
+import matplotlib.pyplot as plt
 
+ 
 # 离线策略Q-learning
 class QLearningTable(object):
-    def __init__(self, actions=[0,1,2,3],learning_rate=0.01, reward_decay=0.9, e_greedy=0.5): #e_greedy=0.9
+    def __init__(self, actions=[0,1,2,3],learning_rate=0.01, reward_decay=0.9, e_greedy=0.6): #e_greedy=0.9
         self.actions =  actions
         self.lr = learning_rate
         self.gamma = reward_decay
@@ -68,8 +70,8 @@ class QLearningTable(object):
             # # 选择随机行为
             state_action = self.q_table.loc[observation, :]
             self.actions_list=state_action[state_action.values>-1].index
-            #action = np.random.choice(self.actions)
-            action = np.random.choice(self.actions_list)
+            action = np.random.choice(self.actions)
+            # action = np.random.choice(self.actions_list)
 
         return action
     def save_model(self):
@@ -89,6 +91,19 @@ class QLearningTable(object):
 
         # 更新公式: Q(s,a)←Q(s,a)+α(r+γ  maxQ(s',a')-Q(s,a))
         self.q_table.loc[s, a] += self.lr * (q_target - q_predict)
+
+def show_plot(result):
+    plt.figure(figsize=(15, 4))
+    plt.plot(result.keys(), result.values(),
+             )
+    # label='%s planning steps' % planning_step
+
+    plt.legend()
+    plt.xlabel('Episode')
+    plt.ylabel('Score')
+    plt.title('Q-learning ')
+    plt.show()
+
 
 
 if __name__ == '__main__':
@@ -112,7 +127,8 @@ if __name__ == '__main__':
     episode_num = 0
     # 记录总步数
     step_num = 0
-
+    result1={}
+    # result2={}
     for e in range( EPISODES):
         done = False
         state = env.reset()
@@ -136,12 +152,13 @@ if __name__ == '__main__':
             get_action.data = [action, score, reward]
             pub_get_action.publish(get_action)
             step_num += 1
+            result1[step_num] = score
             if step_num % 5 ==0:
                 result.data = [score, np.max(agent.q_table.values)]
                 pub_result.publish(result)   
                 agent.save_model()
                 if agent.epsilon < 0.99: 
-                        agent.epsilon += 0.0005  
+                        agent.epsilon += 0.005  
             if done:
                 agent.save_model() 
                 policy = tmp_policy
@@ -149,6 +166,7 @@ if __name__ == '__main__':
             if env.get_goalbox: 
                 result.data = [score, np.max(agent.q_table.values)]
                 pub_result.publish(result)
+                # result1[step_num] = score 
                 print(tmp_policy)
                 print("*"*50)
                 agent.save_model()
@@ -165,5 +183,6 @@ if __name__ == '__main__':
         if flag:
             print(step_num)
             print(tmp_policy)
+            show_plot(result1)
             break     
 
